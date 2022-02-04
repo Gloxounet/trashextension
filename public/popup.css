@@ -1,6 +1,12 @@
 /*popup.css*/
-body {
-  position: relative;
+
+
+body{
+  margin: 0;
+  border: 0;
+}
+
+#body {
   width: 720px;
   height: 160px;
 
