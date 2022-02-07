@@ -111,19 +111,28 @@ var justDoIt = function (){
     }
 //}
 
-
-
+function IsFocusModeOnPromise(){
+    return new Promise(function(resolve,reject){
+        chrome.storage.local.get('focus-mode-checkbox',function (result){
+            resolve(result)
+        })
+    })
+};
+	
 
 //This content script will automatically be injected into pages as youtube.com
 if (location.toString().includes("youtube.com/watch")){
     //INSERTIONS DES BOUTONS TEMPS
     injection_curseurs();
 
-    //DELETIONS DES RECOMMANDATIONS & COMMENTAIRES
-    if (document.querySelector("#polymer-app") || document.querySelector("#masthead") || window.Polymer) {
-        justDoIt()
-        setInterval(function () {
+    IsFocusModeOnPromise().then(function(focusState){
+        //DELETIONS DES RECOMMANDATIONS & COMMENTAIRES
+        console.log(focusState['focus-mode-checkbox'],focusState)
+        if (focusState['focus-mode-checkbox']==="true" && (document.querySelector("#polymer-app") || document.querySelector("#masthead") || window.Polymer)) {
             justDoIt()
-        }, 400);
-    }
+            setInterval(function () {
+                justDoIt()
+            }, 400);
+        }
+    })
 }

@@ -47,7 +47,6 @@ function changeState(self){
 		self = self.srcElement ;
 		id = self.id;
 		var prev_state = res[id]
-		console.log(self.id,prev_state,res)
 		if (prev_state==="true"){prev_state="false"}else{prev_state="true"};
 		var dict = {};
 		dict[self.id]=prev_state;
@@ -63,12 +62,13 @@ window.onload = function() {
 	//Event si bouton cliqué
 	dButton.onclick = function(){
 		console.log("Button has been clicked")
-		chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+		chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
 	    	var cur_tab = tabs[0]
 			var url = cur_tab.url
 			var title = cur_tab.title
 			
 			getSlidersFromStoragePromise().then(function(slidersState){
+			console.log('Current sliders states are :' + JSON.stringify(slidersState))
 	    	var message  = {
 				'type' : 'download_request',
 	    		'url' : url,
@@ -89,7 +89,7 @@ window.onload = function() {
 
 	//Récupération de l'état des boutons checkés
 	getSlidersFromStoragePromise().then(function(dict){
-		if (dict.length == 0) {
+		if (Object.keys(dict).length < 3) {
 			console.log("Data couldn't be retrieved from chrome.storage, default settings...");
 			setSlidersOnStorage(getHtmlSlidersStates());
 		}else {
