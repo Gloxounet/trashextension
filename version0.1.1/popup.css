@@ -7,7 +7,7 @@
 }
 
 /*Div to set all elements*/
-#popup-body {
+#body {
   position: relative;
   width: 720px;
   height: 160px;
@@ -136,7 +136,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #979797;
+  background-color: #FEFA15;
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -148,17 +148,17 @@
   width: 26px;
   left: 4px;
   bottom: 4px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   -webkit-transition: .4s;
   transition: .4s;
 }
 
 input:checked + .slider {
-  background-color: #50D164;
+  background-color: rgb(233, 233, 233);
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #000000;
+  box-shadow: 0 0 1px #4d4d4d;
 }
 
 input:checked + .slider:before {
