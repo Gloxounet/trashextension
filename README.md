@@ -14,7 +14,7 @@ Custom Made Youtube-Download Chrome Extension
 - Then Select Extensions. (You may directly open extensions using chrome://extensions)
 - Now, Enable developer mode
 - Click on Load Unpacked and select the version folder
-- Now go on any youtube.com/watch* page and click on the extension square
+- Now go on any youtube.com/watch* page and click on the extension square, you can tick and untick sliders as you wish
 
 ## Contribution
 
