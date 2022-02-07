@@ -37,8 +37,8 @@ chrome.runtime.onMessage.addListener(async function(message) {
 	if (message['type']== 'download_request'){
         var sliderStates = JSON.parse(message['sliders_states'])
     
-        // PARTIE VIDEO
-        if (sliderStates['trash-video-checkbox']){
+        // Partie téléchargement vidéo
+        if (sliderStates['trash-video-checkbox']==="true"){
             console.log("Download has been requested at url : "+message['url'])
             //Récupération du ReadableStream
             var res = getReadableStreamFromYoutubeUrl(message['url'])
@@ -58,7 +58,6 @@ chrome.runtime.onMessage.addListener(async function(message) {
             console.log("File " + message.filename + message.format + " has been downloaded")
             alert('Vidéo en cours de téléchargement')
         }
-        // PARTIE SOURCE
 
     }
 });

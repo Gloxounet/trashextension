@@ -55,6 +55,67 @@ function changeState(self){
 	
 }
 
+
+
+/*Création png*/
+
+var getVideoIdFromUrl = function (url) {
+    var reg = /(?<==)[^\]]+/g;
+    var id = reg.exec(url);
+    return id[0];
+  }
+
+var trashSource = function (videoUrl) {
+
+	var videoId = getVideoIdFromUrl(videoUrl)
+	var apiKey = "AIzaSyA6JBlEEGPNq57EZu7VOMFg1BsGXpoNYes";
+
+	/*Mise en place de l'élément source (récupération des donneés)*/
+	var xhr = new XMLHttpRequest();
+
+	xhr.open("GET", "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + videoId + "&key=" + apiKey + "", false);
+	xhr.send(null);
+	var res = JSON.parse(xhr.responseText);
+	var channelId = res.items[0].snippet.channelId;
+	var videoTitle = res.items[0].snippet.title;
+	var videoThumbnail = res.items[0].snippet.thumbnails.medium.url;
+
+	xhr.open("GET", "https://www.googleapis.com/youtube/v3/videos?part=statistics&id=" + videoId + "&key=" + apiKey + "", false);
+	xhr.send(null);
+	res = JSON.parse(xhr.responseText);
+	var videoViews = res.items[0].statistics.viewCount;
+
+	xhr.open("GET", "https://www.googleapis.com/youtube/v3/channels?part=snippet&id=" + channelId + "&key=" + apiKey + "", false);
+	xhr.send(null);
+	res = JSON.parse(xhr.responseText);
+	var channelTitle = res.items[0].snippet.title;
+	var channelThumbnail = res.items[0].snippet.thumbnails.default.url;
+
+	/*Injection des données*/
+	var doc = document.getElementById('img');
+
+	doc.querySelector('#videoTitle').innerHTML = videoTitle;
+	doc.querySelector('#videoViews').innerHTML = videoViews.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " vues";
+	doc.querySelector('#videoThumbnail').src = videoThumbnail;
+	doc.querySelector('#channelTitle').innerHTML = channelTitle;
+	doc.querySelector('#channelThumbnail').src = channelThumbnail;
+
+	doc.style.visibility = "visible";
+	html2canvas(doc, { allowTaint: true, scale: 1, windowWidth: 1920, windowHeight: 1080, width: 1920, height: 1080, backgroundColor: null }).then(function (canvas) {
+	  console.log(canvas)
+	  canvas.toBlob(function (blob) {
+		var url = URL.createObjectURL(blob, 'image/jpeg', 1)
+		/*Telechargement*/
+		chrome.downloads.download({
+		  url: url,
+		  filename: videoTitle.replace(/[^\w\s]/gi, '') + ".png"
+		});
+		doc.style.visibility = "hidden";
+	  })
+	});
+}
+
+
 window.onload = function() {
 	//Récupération du bouton HTML
 	var dButton = document.getElementById('download');
@@ -68,18 +129,27 @@ window.onload = function() {
 			var title = cur_tab.title
 			
 			getSlidersFromStoragePromise().then(function(slidersState){
-			console.log('Current sliders states are :' + JSON.stringify(slidersState))
+			slidersState = JSON.stringify(slidersState)
+			console.log('Current sliders states are :' + (slidersState))
 	    	var message  = {
 				'type' : 'download_request',
 	    		'url' : url,
 	    		'quality': "highest",
 	    		'filename': title,
 	    		'format': "mp4",
-				'sliders_states':JSON.stringify(slidersState)
+				'sliders_states':slidersState
 	    		};
 	    	chrome.runtime.sendMessage(message);
-			})
-		})
+			
+			/*Partie téléchargement source (dépendant de popup.html)*/
+			slidersState = JSON.parse(slidersState);
+			if (slidersState['trash-source-checkbox']==="true"){
+				trashSource(url);
+				}
+			});
+
+			
+		});
 	};
 
 	var sliderList = checkboxs.map(function(idd){return document.getElementById(idd)})
