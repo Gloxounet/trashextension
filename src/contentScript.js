@@ -10,6 +10,7 @@ function injection_curseurs(){
     var scrubber = document.getElementsByClassName('ytp-scrubber-container')[0];
     var debut = progressBar.getAttribute('aria-valuemin');
     var fin = progressBar.getAttribute('aria-valuemax');
+    var total = progressBar.getAttribute('aria-valuemax');
     var leftIsShown  = false;
     var rightIsShown = false;
 
@@ -79,6 +80,15 @@ function injection_curseurs(){
     InsertButton(rightGeom,2);
     InsertButton(middleGeom,1);
     InsertButton(leftGeom,0);
+
+    //Messaging on sliders states
+    chrome.runtime.onMessage.addListener(
+        function(request, sender, sendResponse) {
+            
+            if (request.type === "get_time")
+                sendResponse({'debut': debut, 'fin':fin, 'total':total});
+            }
+      );
 }
 
 

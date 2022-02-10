@@ -127,31 +127,48 @@ window.onload = function() {
 	    	var cur_tab = tabs[0]
 			var url = cur_tab.url
 			var title = cur_tab.title
-			
+
+			//Getting time 
+			var debut;
+			var fin;
+			var total;
+			chrome.tabs.sendMessage(cur_tab.id,{type: "get_time"}, function(response) {
+				debut = response['debut'];
+				fin = response['fin'];
+				total = response['total'];
+
+			//Getting sliders states
 			getSlidersFromStoragePromise().then(function(slidersState){
-			slidersState = JSON.stringify(slidersState)
-			console.log('Current sliders states are :' + (slidersState))
+				slidersState = JSON.stringify(slidersState)
+				console.log('Current sliders states are :' + (slidersState))
+			
+			//Envoi du message final
 	    	var message  = {
 				'type' : 'download_request',
 	    		'url' : url,
 	    		'quality': "highest",
 	    		'filename': title,
 	    		'format': "mp4",
+				'debut':debut,
+				'fin':fin,
+				'total':total,
 				'sliders_states':slidersState
 	    		};
 	    	chrome.runtime.sendMessage(message);
+			console.log("Download request sent to background.js : " + JSON.stringify(message))
 			
-			/*Partie téléchargement source (dépendant de popup.html)*/
+			/*Partie téléchargement source (dépendant de popup.html d'où présence du code ici)*/
 			slidersState = JSON.parse(slidersState);
 			if (slidersState['trash-source-checkbox']==="true"){
 				trashSource(url);
 				}
 			});
 
-			
+		});
 		});
 	};
 
+	//Réglage des liens boutons sliders avec chrome.storage
 	var sliderList = checkboxs.map(function(idd){return document.getElementById(idd)})
 	for (var sliderButton of sliderList){
 		sliderButton.onclick = changeState;

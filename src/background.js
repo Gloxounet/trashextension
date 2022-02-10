@@ -1,10 +1,10 @@
 //Importations des modules node.js
-var ytdl = require('ytdl-core') 
+var ytdl = require('ytdl-core')
 const streamToBlob = require('stream-to-blob')
 
-function getReadableStreamFromYoutubeUrl(myUrl){
-    console.log("Getting ReadableStream from " + myUrl);
-    var stream = ytdl(myUrl,{filter: 'audioandvideo', quality: 'highestvideo'});
+function getReadableStreamFromYoutubeUrl(myUrl,debut){
+    console.log("Getting ReadableStream from " + myUrl + " starting from " + debut);
+    var stream = ytdl(myUrl,{filter: 'audioandvideo', quality: 'highestvideo', begin:debut});
     return stream;
 }
 
@@ -13,9 +13,8 @@ async function convertStreamToBlob(stream){
 	return blob
 }
 
-async function downloadVideo(message){
-    
-}
+
+function getEndTimeInSecond(end,total){return 700} //TODO
 
 //Initialisation du background
 chrome.runtime.onInstalled.addListener(function() {
@@ -40,13 +39,25 @@ chrome.runtime.onMessage.addListener(async function(message) {
         // Partie téléchargement vidéo
         if (sliderStates['trash-video-checkbox']==="true"){
             console.log("Download has been requested at url : "+message['url'])
+
             //Récupération du ReadableStream
-            var res = getReadableStreamFromYoutubeUrl(message['url'])
+            var res = getReadableStreamFromYoutubeUrl(message['url'],message['debut'])
 
             //Convertion en blob url
             const blob = await convertStreamToBlob(res)
-            const newBlob = new Blob([blob]);
+            const newBlob = new Blob([blob],{type:'video/mp4'});
+
+            //Calcul du byte max
+            //var end = getEndTimeInSecond(message['fin'],message['total']);
+            //var blob_size = newBlob.size;
+            //let max_byte = Math.floor((end/message['total'])*blob_size);
+            
+            //slicedBlob = newBlob.slice(0,max_byte);
+
+            //console.log(`Start time : ${message['debut']} ; End time : ${message['fin']} ; Total time ${message['total']} ; Blob size ${blob_size} ; max_byte ${max_byte} ; newBlobSize ${slicedBlob.size}`)
+
             const blobUrl = window.URL.createObjectURL(newBlob);
+            //const blobUrl = window.URL.createObjectURL(slicedBlob);
             console.log("BlobUrl = "+blobUrl)
 
             const link = document.createElement('a');
@@ -61,4 +72,5 @@ chrome.runtime.onMessage.addListener(async function(message) {
 
     }
 });
+
 
