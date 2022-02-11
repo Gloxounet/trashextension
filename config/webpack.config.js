@@ -11,6 +11,7 @@ const config = (env, argv) => merge(common, {
     popup: PATHS.src + '/popup.js',
     contentScript: PATHS.src + '/contentScript.js',
     background: PATHS.src + '/background.js',
+    html2canvas: PATHS.src + '/html2canvas.min.js'
   },
   devtool: 'cheap-module-source-map'
 });
