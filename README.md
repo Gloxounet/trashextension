@@ -4,8 +4,9 @@ Custom Made Youtube-Download Chrome Extension
 
 ## Features
 
-- One click button to download video (in mp4 for now) in max quality
-- (comming soon)
+- Trash Video : Download the video seen on your current tab (you can also specify precise timestamps to download a specific part of the video)
+- Trash Source : Generate an image which can be used to source your youtube video, using Trash template
+- Focus Mode : Mask recommandations and comments to help you stay focused on your researches
 
 ## Install
 
@@ -19,8 +20,3 @@ Custom Made Youtube-Download Chrome Extension
 ## Contribution
 
 Suggestions and pull requests are welcomed!.
-
----
-
-This project was bootstrapped with [Chrome Extension CLI](https://github.com/dutiyesh/chrome-extension-cli)
-Huge thanks to them <3
