@@ -3,7 +3,6 @@ var ytdl = require('ytdl-core')
 const streamToBlob = require('stream-to-blob')
 
 
-
 function getReadableStreamFromYoutubeUrl(myUrl,debut){
     console.log("Getting ReadableStream from " + myUrl + " starting from " + debut);
     var stream = ytdl(myUrl,{filter: 'audioandvideo', quality: 'highestvideo', begin:debut});
@@ -15,21 +14,45 @@ async function convertStreamToBlob(stream){
 	return blob
 }
 
-function trimStream(){
-    const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
+//trimVideoEnd(message['filename'],message['format'],message['fin'],message['debut'])
+async function trimVideoEnd(blob,title,format,end,start){
+    const { createFFmpeg, fetchFile } = FFmpeg;
 
-    const ffmpeg = createFFmpeg({ log: true });
+    const ffmpeg = createFFmpeg({
+        log: false,
+        corePath: await chrome.runtime.getURL('vendor/ffmpeg-core.js')
+    });
 
-    (async () => {
     await ffmpeg.load();
-    ffmpeg.FS('writeFile', 'flame.avi', await fetchFile('../assets/flame.avi'));
-    await ffmpeg.run('-i', 'flame.avi', '-ss', '0', '-to', '1', 'flame_trim.avi');
-    //await fs.promises.writeFile('flame_trim.avi', ffmpeg.FS('readFile', 'flame_trim.avi'));
-    process.exit(0);
-    })();
+    var buffer = await blob.arrayBuffer()
+    let stringFileName = `${title}.${format}`;
+    var stringFileNameTrim = `${title}_trimmed.${format}`;
+
+    ffmpeg.FS('writeFile', stringFileName, new Uint8Array(buffer) );
+    await ffmpeg.run('-i', stringFileName, '-to', `${end}`, '-c' ,'copy', '-copyts',stringFileNameTrim);
+    
+    resArray = await ffmpeg.FS('readFile',stringFileNameTrim);
+    return new Promise((resolve)=>{resolve(new Blob([resArray]))})
+
 }
 
-function getEndTimeInSecond(end,total){return 700} //TODO
+async function getBitrate(url){
+    return new Promise((resolve) => {
+        let bitrate = 0;
+
+        const info = function(url) {
+            return ytdl.getBasicInfo(url,{filter: 'audioandvideo', quality: 'highestvideo'})
+            .then(token => { return token } )
+        };
+
+        const vidInfo = info(url);
+        vidInfo.then(function(result) {
+            console.log(result.formats);
+            bitrate = result.formats[0].bitrate;
+        });
+        resolve(bitrate)
+    })
+}
 
 //Initialisation du background
 chrome.runtime.onInstalled.addListener(function() {
@@ -46,6 +69,7 @@ chrome.runtime.onInstalled.addListener(function() {
 
 });
 
+//Reception message download
 chrome.runtime.onMessage.addListener(async function(message) {
 	//Check message
 	if (message['type']== 'download_request'){
@@ -53,39 +77,38 @@ chrome.runtime.onMessage.addListener(async function(message) {
     
         // Partie téléchargement vidéo
         if (sliderStates['trash-video-checkbox']==="true"){
-            console.log("Download has been requested at url : "+message['url'])
+            console.log("Download has been requested at url : "+message['url']);
 
             //Récupération du ReadableStream
-            var res = getReadableStreamFromYoutubeUrl(message['url'],message['debut'])
+            var res = getReadableStreamFromYoutubeUrl(message['url'],message['debut']);
 
-            //Convertion en blob url
-            const blob = await convertStreamToBlob(res)
-            const newBlob = new Blob([blob],{type:'video/mp4'});
+            //Get bitrate
+            //var bitrate = await getBitrate(message['url']);
 
-            //Calcul du byte max
-            //var end = getEndTimeInSecond(message['fin'],message['total']);
-            //var blob_size = newBlob.size;
-            //let max_byte = Math.floor((end/message['total'])*blob_size);
-            
-            //slicedBlob = newBlob.slice(0,max_byte);
+            //Convertion en blob
+            var blob = await convertStreamToBlob(res)
 
-            //console.log(`Start time : ${message['debut']} ; End time : ${message['fin']} ; Total time ${message['total']} ; Blob size ${blob_size} ; max_byte ${max_byte} ; newBlobSize ${slicedBlob.size}`)
+            //Trim videoblob if needed
+            if (message['fin']!=message['total']){
+                console.log("Trimming video...")
+                blob = await trimVideoEnd(blob,message['filename'],message['format'],message['fin'],message['debut'])
+            }
 
-            const blobUrl = window.URL.createObjectURL(newBlob);
-            //const blobUrl = window.URL.createObjectURL(slicedBlob);
-            console.log("BlobUrl = "+blobUrl)
+            //Create blob url for download purposes
+            const blobUrl = window.URL.createObjectURL(blob);
+            console.log("BlobUrl = "+blobUrl);
 
+            //Download trick
             const link = document.createElement('a');
             link.href = blobUrl;
             link.setAttribute('download', `${message.filename}.${message.format}`);
             document.body.appendChild(link);
             link.click();
             link.parentNode.removeChild(link);
-            console.log("File " + message.filename + message.format + " has been downloaded")
-            alert('Vidéo en cours de téléchargement')
+            console.log("File " + message.filename + message.format + " has been downloaded");
         }
-
     }
 });
+
 
 
