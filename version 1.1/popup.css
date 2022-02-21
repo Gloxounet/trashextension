@@ -1,0 +1,205 @@
+/*popup.css*/
+
+/*Fuck margins & borders*/
+*{
+  margin: 0;
+  border: 0;
+}
+
+/*Div to set all elements*/
+#popup-body {
+  position: relative;
+  width: 720px;
+  height: 160px;
+
+  background: #DE2827;
+}
+
+/*Big Button : To launch download*/
+#download {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  left: 21px;
+  top: 15px;
+  
+  background: url(popup_trash_button.png);
+  border: 5px solid #000000;
+  filter: drop-shadow(4px 4px 4px rgba(0, 0, 0, 0.25));
+}
+
+#download:hover {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+
+  background: url(popup_trash_button.png);
+  border: 5px solid #FEFA15;
+  filter: drop-shadow(4px 4px 4px rgba(0, 0, 0, 0.25));
+}
+
+#download:active {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+
+  background: url(popup_trash_button.png);
+  border: 5px solid #FEFA15;
+  box-shadow: inset 14px 14px 4px rgba(0, 0, 0, 0.25);
+}
+
+/*Title : Trash Extension*/
+
+#popup-title{
+  position: absolute;
+  width: 259px;
+  height: 41px;
+  left: 187px;
+  top: 15px;
+
+  font-family: Roboto;
+  font-style: italic;
+  font-weight: normal;
+  font-size: 36px;
+  line-height: 42px;
+
+  color: #FFFFFF;
+}
+
+/*Buttons + Text divs*/
+#trash-source {
+  position: absolute;
+  width: 250px;
+  height: 34px;
+  left: 190px;
+  top: 63px;
+}
+
+#focus-mode {
+  position: absolute;
+  width: 250px;
+  height: 34px;
+  left: 446px;
+  top: 63px;
+}
+
+#trash-video{
+  position: absolute;
+  width: 250px;
+  height: 34px;
+  left: 190px;
+  top: 107px;
+}
+
+/*--------------SWITCH-----------------*/
+
+/* The switch - the box around the slider */
+.switch {
+  position: absolute;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  left: 5px;
+  top: 0px;
+}
+
+.switch-text {
+  position: absolute;
+  width: 176px;
+  height: 22px;
+  left: 74px;
+  top: 5px;
+
+  font-family: Roboto;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 21px;
+  display: flex;
+  align-items: center;
+
+  color: #FFFFFF;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #979797;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #FFFFFF;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #50D164;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #000000;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+.slider.round:before {
+  border-radius: 50%;
+}
+
+#log-displayer {
+  position: absolute;
+  width: 222px;
+  height: 16px;
+  left: 471px;
+  top: 30px;
+  
+  background: #FFFFFF;
+  border-radius: 4px;
+}
+
+#log-text{
+  position: absolute;
+  width: 222px;
+  height: 12px;
+  left: 0px;
+  top: 2px;
+  
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 12px;
+  /* identical to box height */
+  
+  text-align: center;
+  
+  color: #7e4646;
+}

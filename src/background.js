@@ -40,7 +40,7 @@ async function trimVideoEnd(blob,title,format,end,start){
     ffmpeg.FS('writeFile', stringFileName, new Uint8Array(buffer) );
 
     quickLog("Trimming video")
-    await ffmpeg.run('-i', stringFileName, '-to', `${end}`, '-c' ,'copy', '-copyts',stringFileNameTrim);
+    await ffmpeg.run('-i', stringFileName, '-to', `${end-start}`, '-c' ,'copy', '-copyts',stringFileNameTrim);
     
     resArray = await ffmpeg.FS('readFile',stringFileNameTrim);
     quickLog("Returning blob")
