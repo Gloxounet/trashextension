@@ -149,7 +149,8 @@ window.addEventListener("load",function(event) {
 				else {
 					var debut = response['debut'];
 					var fin = response['fin'];
-					var total = response['total'];
+					var total = response['duree'];
+					quickLog(`Start ${debut} End ${fin} Total ${total}`)
 
 					//Getting sliders states
 					getSlidersFromStoragePromise().then(function(slidersState){

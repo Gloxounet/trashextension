@@ -151,7 +151,6 @@ if (location.toString().includes("youtube.com/watch")){
 
     IsFocusModeOnPromise().then(function(focusState){
         //DELETIONS DES RECOMMANDATIONS & COMMENTAIRES
-        console.log(focusState['focus-mode-checkbox'],focusState)
         if (focusState['focus-mode-checkbox']==="true" && (document.querySelector("#polymer-app") || document.querySelector("#masthead") || window.Polymer)) {
             justDoIt()
             setInterval(function () {
