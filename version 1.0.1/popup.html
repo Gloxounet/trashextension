@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Trash Extension Popup</title>
+	<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+	<link href="popup.css" rel="stylesheet">
+	<script src="html2canvas.min.js"></script>
+
+</head>
+
+<body>
+	<div id="popup-body">
+		<button id="download"></button>
+		<h1 id="popup-title">Trash Extension</h1>
+
+		<!-- Rounded switchs -->
+		<div id="trash-source">
+			<label class="switch">
+				<input type="checkbox" id="trash-source-checkbox" checked="true">
+				<span class="slider round"></span>
+			</label>
+			<p class="switch-text">trash source</p>
+		</div>
+		<div id="trash-video">
+			<label class="switch">
+				<input type="checkbox" id="trash-video-checkbox" checked="true">
+				<span class="slider round"></span>
+			</label>
+			<p class="switch-text">trash video</p>
+		</div>
+		<div id="focus-mode">
+			<label class="switch">
+				<input type="checkbox" id="focus-mode-checkbox" checked="true" >
+				<span class="slider round"></span>
+			</label>
+			<p class="switch-text">focus mode</p>
+		</div>
+
+
+
+	</div>
+
+	<!-- Partie non visible pour générer l'image -->
+	<div style="visibility:hidden;top:-500px; width: 1920px; height: 1080px; position:absolute;" id="img">
+
+		<div
+		  style="background-color:white;display:inline-flex;border-radius:10px;overflow:hidden;height:139px; position: absolute; bottom: 12px; left: 12px">
+		  <img id="videoThumbnail" src="" height="139" alt="videoThumb" style="border-radius:10px">
+		  <div style="display:flex;flex-direction:column;padding: 15px 30px 0px 30px;">
+			<span id="videoTitle"
+			  style="font-weight:400;color:#111111;font-family:Roboto,Arial,sans-serif;font-size:30px;"></span>
+			<div style="display:flex;justify-content:space-between;margin-top:18px">
+			  <div style="display:flex;">
+				<img id="channelThumbnail" src="" height="58" alt="channelThumb" style="border-radius:100%;">
+				<span id="channelTitle"
+				  style="align-self:center;color:#000;font-weight:600;font-family:Roboto,Arial,sans-serif;font-size:23px;margin-left:10px;"></span>
+			  </div>
+			  <div id="videoViews"
+				style="align-self:center;color:rgba(17, 17, 17, 0.6);font-family:Roboto,Arial,sans-serif;font-weight:400;font-size:28px;margin-left:20px">
+			  </div>
+			</div>
+		  </div>
+		</div>
+	
+	</div>
+	
+</body>
+<script type="text/javascript" src="popup.js"></script>
+</html>
