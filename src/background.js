@@ -1,3 +1,12 @@
+//Log
+const quickLog = function(txt){
+    let message  = {
+        'type' : 'log',
+        'content':txt
+        };
+    chrome.runtime.sendMessage(message);
+}
+
 //Importations des modules node.js
 var ytdl = require('ytdl-core')
 const streamToBlob = require('stream-to-blob')
@@ -17,21 +26,24 @@ async function convertStreamToBlob(stream){
 //trimVideoEnd(message['filename'],message['format'],message['fin'],message['debut'])
 async function trimVideoEnd(blob,title,format,end,start){
     const { createFFmpeg, fetchFile } = FFmpeg;
-
+    quickLog("Initializing FFmpeg")
     const ffmpeg = createFFmpeg({
         log: false,
         corePath: await chrome.runtime.getURL('vendor/ffmpeg-core.js')
     });
-
     await ffmpeg.load();
+
+    quickLog("Writing into the RAM for treatment")
     var buffer = await blob.arrayBuffer()
     let stringFileName = `${title}.${format}`;
     var stringFileNameTrim = `${title}_trimmed.${format}`;
-
     ffmpeg.FS('writeFile', stringFileName, new Uint8Array(buffer) );
+
+    quickLog("Trimming video")
     await ffmpeg.run('-i', stringFileName, '-to', `${end}`, '-c' ,'copy', '-copyts',stringFileNameTrim);
     
     resArray = await ffmpeg.FS('readFile',stringFileNameTrim);
+    quickLog("Returning blob")
     return new Promise((resolve)=>{resolve(new Blob([resArray]))})
 
 }
@@ -80,12 +92,14 @@ chrome.runtime.onMessage.addListener(async function(message) {
             console.log("Download has been requested at url : "+message['url']);
 
             //Récupération du ReadableStream
+            quickLog("Getting video stream from Google API")
             var res = getReadableStreamFromYoutubeUrl(message['url'],message['debut']);
 
             //Get bitrate
             //var bitrate = await getBitrate(message['url']);
 
             //Convertion en blob
+            quickLog("Converting stream to blob")
             var blob = await convertStreamToBlob(res)
 
             //Trim videoblob if needed
@@ -95,9 +109,11 @@ chrome.runtime.onMessage.addListener(async function(message) {
             }
 
             //Create blob url for download purposes
+            quickLog("Creating blob url")
             const blobUrl = window.URL.createObjectURL(blob);
             console.log("BlobUrl = "+blobUrl);
 
+            quickLog("Downloading file")
             //Download trick
             const link = document.createElement('a');
             link.href = blobUrl;
@@ -106,6 +122,7 @@ chrome.runtime.onMessage.addListener(async function(message) {
             link.click();
             link.parentNode.removeChild(link);
             console.log("File " + message.filename + message.format + " has been downloaded");
+            quickLog("File downloaded")
         }
     }
 });
