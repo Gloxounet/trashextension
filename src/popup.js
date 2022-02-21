@@ -1,4 +1,16 @@
+//Global variables
 var checkboxs = ['trash-source-checkbox','trash-video-checkbox','focus-mode-checkbox'];
+
+//Logs 
+var quickLog = function(txt){
+    try {
+        var log = document.getElementById('log-text');
+        log.innerHTML = txt;
+		console.log(txt)
+    } catch (e) {
+        console.log(`Element log-text not found while trying to set log-text innerHTML to ${txt}`)
+    }
+}
 
 /*DOM*/
 function getHtmlSlidersStates(){
@@ -54,7 +66,6 @@ function changeState(self){
 	})
 	
 }
-
 
 
 /*Création png*/
@@ -116,57 +127,64 @@ var trashSource = function (videoUrl) {
 }
 
 
-window.onload = function() {
+window.addEventListener("load",function(event) {
 	//Récupération du bouton HTML
 	var dButton = document.getElementById('download');
 
 	//Event si bouton cliqué
-	dButton.onclick = function(){
-		console.log("Button has been clicked")
-		chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-	    	var cur_tab = tabs[0]
+	dButton.onclick = async function(){
+		quickLog("Button has been clicked")
+		chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
+			var cur_tab = tabs[0]
 			var url = cur_tab.url
 			var title = cur_tab.title
-
-			//Getting time 
-			var debut;
-			var fin;
-			var total;
+		
+			//Getting time
 			chrome.tabs.sendMessage(cur_tab.id,{type: "get_time"}, function(response) {
-				debut = response['debut'];
-				fin = response['fin'];
-				total = response['total'];
 
-			//Getting sliders states
-			getSlidersFromStoragePromise().then(function(slidersState){
-				slidersState = JSON.stringify(slidersState)
-				console.log('Current sliders states are :' + (slidersState))
-			
-			//Envoi du message final
-	    	var message  = {
-				'type' : 'download_request',
-	    		'url' : url,
-	    		'quality': "highest",
-	    		'filename': title,
-	    		'format': "mp4",
-				'debut':debut,
-				'fin':fin,
-				'total':total,
-				'sliders_states':slidersState
-	    		};
-	    	chrome.runtime.sendMessage(message);
-			console.log("Download request sent to background.js : " + JSON.stringify(message))
-			
-			/*Partie téléchargement source (dépendant de popup.html d'où présence du code ici)*/
-			slidersState = JSON.parse(slidersState);
-			if (slidersState['trash-source-checkbox']==="true"){
-				trashSource(url);
+				if (chrome.runtime.lastError){
+					var errorMsg = chrome.runtime.lastError.message;
+					quickLog("Cannot read timestamps, please refresh page")
+				}
+				else {
+					var debut = response['debut'];
+					var fin = response['fin'];
+					var total = response['total'];
+
+					//Getting sliders states
+					getSlidersFromStoragePromise().then(function(slidersState){
+						slidersState = JSON.stringify(slidersState)
+						console.log('Current sliders states are :' + (slidersState))
+						
+						//Envoi du message final
+						var message  = {
+							'type' : 'download_request',
+							'url' : url,
+							'quality': "highest",
+							'filename': title,
+							'format': "mp4",
+							'debut':debut,
+							'fin':fin,
+							'total':total,
+							'sliders_states':slidersState
+						};
+						chrome.runtime.sendMessage(message);
+						quickLog("Sending download")
+						console.log("Download request sent to background.js : " + JSON.stringify(message))
+						
+						/*Partie téléchargement source (dépendant de popup.html d'où présence du code ici)*/
+						slidersState = JSON.parse(slidersState);
+						if (slidersState['trash-source-checkbox']==="true"){
+							quickLog("Downloading trash source png")
+							trashSource(url);
+						}
+					});
 				}
 			});
+		})
+	}
 
-		});
-		});
-	};
+
 
 	//Réglage des liens boutons sliders avec chrome.storage
 	var sliderList = checkboxs.map(function(idd){return document.getElementById(idd)})
@@ -179,8 +197,8 @@ window.onload = function() {
 		if (Object.keys(dict).length < 3) {
 			console.log("Data couldn't be retrieved from chrome.storage, default settings...");
 			setSlidersOnStorage(getHtmlSlidersStates());
-		}else {
+		} else {
 			setHtmlSlidersStates(dict);
 		}
 	})
-}
+})
