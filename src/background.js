@@ -12,6 +12,7 @@ var ytdl = require('ytdl-core')
 const streamToBlob = require('stream-to-blob')
 
 //HMS Manipulation
+/*
 function convertHMS(value) {
     const sec = parseInt(value, 10); // convert value to number if it's string
     let hours   = Math.floor(sec / 3600); // get hours
@@ -23,11 +24,24 @@ function convertHMS(value) {
     if (seconds < 10) {seconds = "0"+seconds;}
     return hours+':'+minutes+':'+seconds; // Return is HH : MM : SS
 }
+*/
 
-function getReadableStreamFromYoutubeUrl(myUrl,debut){
-    const debutHMS = convertHMS(debut)
-    console.log("Getting ReadableStream from " + myUrl + " starting from " + debut);
-    var stream = ytdl(myUrl,{filter: 'audioandvideo', quality: 'highestvideo', begin:debutHMS});
+function getReadableStreamFromYoutubeUrl(myUrl,type){
+    //const debutHMS = convertHMS(debut)
+    //console.log("Getting ReadableStream from " + myUrl + " starting from " + debut);
+    console.log(`Getting ${type} ReadableStream from ${myUrl}`)
+    var stream;
+    switch (type){
+    case 'audio':
+        stream = ytdl(myUrl,{quality: 'highestaudio'});
+        break;
+    case 'video':
+        stream = ytdl(myUrl,{ quality: 'highestvideo'});
+        break;
+    case _ :
+        stream = ytdl(myUrl,{filter: 'audioandvideo', quality: 'highestvideo'});
+        break;
+    }
     return stream;
 }
 
@@ -37,6 +51,7 @@ async function convertStreamToBlob(stream){
 }
 
 //trimVideoEnd(message['filename'],message['format'],message['fin'],message['debut'])
+/*
 async function trimVideoEnd(blob,title,format,end,start){
     const { createFFmpeg, fetchFile } = FFmpeg;
     quickLog("Initializing FFmpeg")
@@ -58,7 +73,47 @@ async function trimVideoEnd(blob,title,format,end,start){
     resArray = await ffmpeg.FS('readFile',stringFileNameTrim);
     quickLog("Returning blob")
     return new Promise((resolve)=>{resolve(new Blob([resArray]))})
+}*/
 
+async function trimVideoEndAndMerge(VideoBlob,AudioBlob,title,format,end,start){
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    quickLog("Initializing FFmpeg")
+    const ffmpeg = createFFmpeg({
+        log: false,
+        corePath: await chrome.runtime.getURL('vendor/ffmpeg-core.js')
+    });
+    await ffmpeg.load();
+
+    quickLog("Writing into the RAM for treatment")
+    var vbuffer = await VideoBlob.arrayBuffer()
+    var abuffer = await AudioBlob.arrayBuffer()
+
+    //Naming things
+    let stringFileName =  `${title}.${format}`;
+    let stringVideoName = `${title}_video.${format}`;
+    let stringAudioName = `${title}_audio.${format}`;
+    let stringFileNameTrim = `${title}_trimmed.${format}`;
+
+    ffmpeg.FS('writeFile', stringVideoName, new Uint8Array(vbuffer) );
+    ffmpeg.FS('writeFile', stringAudioName, new Uint8Array(abuffer) );
+
+    quickLog("Merging audio/video and trimming if necessary")
+    await ffmpeg.run(
+        // Set inputs
+        '-i', stringAudioName,
+        '-i', stringVideoName,
+        '-ss', `${start}`,
+        '-to', `${end}`,
+        // No re-encoding
+        '-c', 'copy',
+        //'-copyts',
+        // Target file
+        stringFileNameTrim
+    );
+    
+    resArray = await ffmpeg.FS('readFile',stringFileNameTrim);
+    quickLog("Returning blob")
+    return new Promise((resolve)=>{resolve(new Blob([resArray]))})
 }
 
 async function getBitrate(url){
@@ -103,24 +158,25 @@ chrome.runtime.onMessage.addListener(async function(message) {
         // Partie téléchargement vidéo
         if (sliderStates['trash-video-checkbox']==="true"){
             console.log("Download has been requested at url : "+message['url']);
-
+            var blob;
             //Récupération du ReadableStream
             quickLog("Getting video stream from Google API")
-            var res = getReadableStreamFromYoutubeUrl(message['url'],message['debut']);
+            //Video
+            var StreamVideo = getReadableStreamFromYoutubeUrl(message['url'],'video');
+            //Audio
+            var StreamAudio = getReadableStreamFromYoutubeUrl(message['url'],'audio');
 
             //Get bitrate
             //var bitrate = await getBitrate(message['url']);
 
             //Convertion en blob
-            quickLog("Converting stream to blob")
-            var blob = await convertStreamToBlob(res)
+            quickLog("Downloading video stream")
+            var BlobVideo = await convertStreamToBlob(StreamVideo);
+            quickLog("Downloading audio stream")
+            var BlobAudio = await convertStreamToBlob(StreamAudio);
 
-            //Trim videoblob if needed
-            if (message['fin']!=message['total']){
-                console.log("Trimming video...")
-                blob = await trimVideoEnd(blob,message['filename'],message['format'],message['fin'],message['debut'])
-            }
-
+            //Merge video and trim (default to end)
+            blob = await trimVideoEndAndMerge(BlobVideo,BlobAudio,message['filename'],message['format'],message['fin'],message['debut'])
             //Create blob url for download purposes
             quickLog("Creating blob url")
             const blobUrl = window.URL.createObjectURL(blob);

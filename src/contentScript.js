@@ -106,6 +106,7 @@ function injection_curseurs(){
       );
 }
 
+
 //Cinema mode for focus mode
 var enableCinema = function() {
     var yt = yt;
@@ -160,7 +161,6 @@ if(window.location.href.match(/((http:\/\/(.*youtube\.com\/.*))|(https:\/\/(.*yo
             sendResponse({status: "yes"});
         }
     });
-
 
 
     IsFocusModeOnPromise().then(function(focusState){
