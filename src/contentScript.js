@@ -106,6 +106,13 @@ function injection_curseurs(){
       );
 }
 
+//Cinema mode for focus mode
+var enableCinema = function() {
+    var yt = yt;
+    yt = yt || {};
+    yt.playerConfig = {"player_wide": 1};
+    document.cookie = "wide=1; domain=.youtube.com; expires=31536e3; path=/";
+}
 
 //Comments & Recommandations remover on youtube.com/watch
 var justDoIt = function (){
@@ -154,22 +161,22 @@ if(window.location.href.match(/((http:\/\/(.*youtube\.com\/.*))|(https:\/\/(.*yo
         }
     });
 
-    //Cinema mode
-    (()=>{
-        var yt = yt;
-        yt = yt || {};
-        yt.playerConfig = {"player_wide": 1};
-        document.cookie = "wide=1; domain=.youtube.com; expires=31536e3; path=/";
-    })()
 
 
     IsFocusModeOnPromise().then(function(focusState){
-        //DELETIONS DES RECOMMANDATIONS & COMMENTAIRES
-        if (focusState['focus-mode-checkbox']==="true" && (document.querySelector("#polymer-app") || document.querySelector("#masthead") || window.Polymer)) {
-            justDoIt()
-            setInterval(function () {
-                justDoIt()
-            }, 400);
+        
+        if (focusState['focus-mode-checkbox']==="true"){
+            //AUTO CINEMA MODE
+            enableCinema();
+
+            //DELETIONS DES RECOMMANDATIONS & COMMENTAIRES 
+            if  ((document.querySelector("#polymer-app") || document.querySelector("#masthead") || window.Polymer)){ 
+                justDoIt();
+                
+                setInterval(function () {
+                    justDoIt()
+                }, 400);
+            }
         }
     })
 }

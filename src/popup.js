@@ -26,7 +26,7 @@ var isContentScriptHere = function(){
 		if (cTab.url.toString().includes("youtube.com/watch")){
 			chrome.tabs.sendMessage(cTab.id, {text: "are_you_there_content_script?"}, function(msg) {
 				if (window.chrome.runtime.lastError) {
-					reloadPage();v
+					reloadPage();
 				}
 			});
 		}
@@ -202,10 +202,7 @@ var onClickMain = async function(){
 	})
 }
 
-
-
 window.addEventListener("load",async function(event) {
-
 	
 	//Actualise if contentScript not loaded
 	isContentScriptHere();
