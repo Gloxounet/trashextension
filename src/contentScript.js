@@ -62,7 +62,8 @@ function injection_curseurs(){
     }
 
     function milieu(){
-        //TODO
+        alert("Download starting...")//TODO communication direct avec background
+        chrome.runtime.sendMessage({'type':'small_button_click'});
     }
 
     const fonctions=[gauche,milieu,droite];
@@ -143,11 +144,24 @@ function IsFocusModeOnPromise(){
     })
 };
 	
-
-//This content script will automatically be injected into pages as youtube.com
-if (location.toString().includes("youtube.com/watch")){
+if(window.location.href.match(/((http:\/\/(.*youtube\.com\/.*))|(https:\/\/(.*youtube\.com\/.*)))/i)){
     //INSERTIONS DES BOUTONS TEMPS
     injection_curseurs();
+
+    chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+        if (msg.text === 'are_you_there_content_script?') {
+            sendResponse({status: "yes"});
+        }
+    });
+
+    //Cinema mode
+    (()=>{
+        var yt = yt;
+        yt = yt || {};
+        yt.playerConfig = {"player_wide": 1};
+        document.cookie = "wide=1; domain=.youtube.com; expires=31536e3; path=/";
+    })()
+
 
     IsFocusModeOnPromise().then(function(focusState){
         //DELETIONS DES RECOMMANDATIONS & COMMENTAIRES

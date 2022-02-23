@@ -12,6 +12,27 @@ var quickLog = function(txt){
     }
 }
 
+//ContentScript & Reloading
+var reloadPage = function() {
+	chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
+		var code = 'window.location.reload();';
+		chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
+	});
+}
+
+var isContentScriptHere = function(){
+	chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
+		const cTab = tabs[0];
+		if (cTab.url.toString().includes("youtube.com/watch")){
+			chrome.tabs.sendMessage(cTab.id, {text: "are_you_there_content_script?"}, function(msg) {
+				if (window.chrome.runtime.lastError) {
+					reloadPage();v
+				}
+			});
+		}
+	});
+}
+
 /*DOM*/
 function getHtmlSlidersStates(){
 	var dict = {};
@@ -63,13 +84,14 @@ function changeState(self){
 		var dict = {};
 		dict[self.id]=prev_state;
 		setSlidersOnStorage(dict);
+		if (self.id == 'focus-mode-checkbox'){
+			reloadPage();
+		}
 	})
 	
 }
 
-
 /*Création png*/
-
 var getVideoIdFromUrl = function (url) {
     var reg = /(?<==)[^\]]+/g;
     var id = reg.exec(url);
@@ -126,66 +148,72 @@ var trashSource = function (videoUrl) {
 	});
 }
 
+//Fonction principale si bouton cliqué
+var onClickMain = async function(){
+	quickLog("Button has been clicked")
+	chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
+		var cur_tab = tabs[0]
+		var url = cur_tab.url
+		var title = cur_tab.title
+	
+		//Getting time
+		chrome.tabs.sendMessage(cur_tab.id,{type: "get_time"}, function(response) {
 
-window.addEventListener("load",function(event) {
+			if (chrome.runtime.lastError){
+				var errorMsg = chrome.runtime.lastError.message;
+				quickLog("Cannot read timestamps, please refresh page")
+			}
+			else {
+				var debut = response['debut'];
+				var fin = response['fin'];
+				var total = response['duree'];
+				quickLog(`Start ${debut} End ${fin} Total ${total}`)
+
+				//Getting sliders states
+				getSlidersFromStoragePromise().then(function(slidersState){
+					slidersState = JSON.stringify(slidersState)
+					console.log('Current sliders states are :' + (slidersState))
+					
+					//Envoi du message final
+					var message  = {
+						'type' : 'download_request',
+						'url' : url,
+						'quality': "highest",
+						'filename': title,
+						'format': "mp4",
+						'debut':debut,
+						'fin':fin,
+						'total':total,
+						'sliders_states':slidersState
+					};
+					chrome.runtime.sendMessage(message);
+					quickLog("Sending download")
+					console.log("Download request sent to background.js : " + JSON.stringify(message))
+					
+					/*Partie téléchargement source (dépendant de popup.html d'où présence du code ici)*/
+					slidersState = JSON.parse(slidersState);
+					if (slidersState['trash-source-checkbox']==="true"){
+						quickLog("Downloading trash source png")
+						trashSource(url);
+					}
+				});
+			}
+		});
+	})
+}
+
+
+
+window.addEventListener("load",async function(event) {
+
+	
+	//Actualise if contentScript not loaded
+	isContentScriptHere();
+
+
 	//Récupération du bouton HTML
 	var dButton = document.getElementById('download');
-
-	//Event si bouton cliqué
-	dButton.onclick = async function(){
-		quickLog("Button has been clicked")
-		chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
-			var cur_tab = tabs[0]
-			var url = cur_tab.url
-			var title = cur_tab.title
-		
-			//Getting time
-			chrome.tabs.sendMessage(cur_tab.id,{type: "get_time"}, function(response) {
-
-				if (chrome.runtime.lastError){
-					var errorMsg = chrome.runtime.lastError.message;
-					quickLog("Cannot read timestamps, please refresh page")
-				}
-				else {
-					var debut = response['debut'];
-					var fin = response['fin'];
-					var total = response['duree'];
-					quickLog(`Start ${debut} End ${fin} Total ${total}`)
-
-					//Getting sliders states
-					getSlidersFromStoragePromise().then(function(slidersState){
-						slidersState = JSON.stringify(slidersState)
-						console.log('Current sliders states are :' + (slidersState))
-						
-						//Envoi du message final
-						var message  = {
-							'type' : 'download_request',
-							'url' : url,
-							'quality': "highest",
-							'filename': title,
-							'format': "mp4",
-							'debut':debut,
-							'fin':fin,
-							'total':total,
-							'sliders_states':slidersState
-						};
-						chrome.runtime.sendMessage(message);
-						quickLog("Sending download")
-						console.log("Download request sent to background.js : " + JSON.stringify(message))
-						
-						/*Partie téléchargement source (dépendant de popup.html d'où présence du code ici)*/
-						slidersState = JSON.parse(slidersState);
-						if (slidersState['trash-source-checkbox']==="true"){
-							quickLog("Downloading trash source png")
-							trashSource(url);
-						}
-					});
-				}
-			});
-		})
-	}
-
-
+	dButton.onclick = onClickMain;
 
 	//Réglage des liens boutons sliders avec chrome.storage
 	var sliderList = checkboxs.map(function(idd){return document.getElementById(idd)})
