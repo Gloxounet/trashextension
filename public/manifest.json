@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Trashextension",
-  "version": "1.1",
+  "version": "1.2",
   "description": "A chrome extension to ease video editing",
   "author":"@Gloxounet & @Twane70",
   "icons": {
