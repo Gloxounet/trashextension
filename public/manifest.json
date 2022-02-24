@@ -26,6 +26,10 @@
     "declarativeContent",
     "tabs"
   ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
   "background": {
     "scripts" : [
       "vendor/ffmpeg.min.js",

@@ -224,6 +224,15 @@ window.addEventListener("load",async function(event) {
 		}
 	})
 
+	//Link to Option
+	document.getElementById('go-to-options').addEventListener('click', function() {
+		if (chrome.runtime.openOptionsPage) {
+		  chrome.runtime.openOptionsPage();
+		} else {
+		  window.open(chrome.runtime.getURL('options.html'));
+		}
+	  });
+
 	//Récupération du bouton HTML
 	var dButton = document.getElementById('download');
 	dButton.onclick = onClickMain;
