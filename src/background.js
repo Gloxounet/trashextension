@@ -5,6 +5,13 @@ const quickLog = function(txt){
         'content':txt
         };
     chrome.runtime.sendMessage(message);
+    
+    if (txt=="Start"){
+        chrome.storage.local.set({download_on:'yes'}, function(res){})
+    }
+    if (txt=="End"){
+        chrome.storage.local.set({download_on:'no'}, function(res){})
+    }
 }
 
 //Importations des modules node.js
@@ -154,6 +161,7 @@ chrome.runtime.onMessage.addListener(async function(message) {
 	//Check message
 	if (message['type']== 'download_request'){
         var sliderStates = JSON.parse(message['sliders_states'])
+        quickLog("Start")
     
         // Partie téléchargement vidéo
         if (sliderStates['trash-video-checkbox']==="true"){
@@ -191,6 +199,7 @@ chrome.runtime.onMessage.addListener(async function(message) {
             link.click();
             link.parentNode.removeChild(link);
             console.log("File " + message.filename + message.format + " has been downloaded");
+            quickLog("End")
             quickLog("File downloaded")
         }
     }

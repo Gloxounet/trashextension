@@ -74,7 +74,7 @@ function setSlidersOnStorage(slidersDict){
 	chrome.storage.local.set(slidersDict, function(res){})
 };
 
-/*On click change storage listener*/
+//Changing slider state
 function changeState(self){
 	getSlidersFromStoragePromise().then(function(res){
 		self = self.srcElement ;
@@ -88,10 +88,19 @@ function changeState(self){
 			reloadPage();
 		}
 	})
-	
 }
 
-/*Création png*/
+function isDownloading(self){
+	return new Promise(function(resolve,reject){
+		chrome.storage.local.get('download_on',function (result){
+			resolve(result.download_on=='yes')
+			})
+		})
+}
+
+/*STORAGE END*/
+
+/*TRASH SOURCE*/
 var getVideoIdFromUrl = function (url) {
     var reg = /(?<==)[^\]]+/g;
     var id = reg.exec(url);
@@ -147,8 +156,9 @@ var trashSource = function (videoUrl) {
 	  })
 	});
 }
+/*TRASH SOURCE END*/
 
-//Fonction principale si bouton cliqué
+// Main downloading func
 var onClickMain = async function(){
 	quickLog("Button has been clicked")
 	chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
@@ -207,6 +217,12 @@ window.addEventListener("load",async function(event) {
 	//Actualise if contentScript not loaded
 	isContentScriptHere();
 
+	//Check if background is running a download
+	isDownloading().then((res)=>{
+		if (res){
+			quickLog("A download is still running")
+		}
+	})
 
 	//Récupération du bouton HTML
 	var dButton = document.getElementById('download');
