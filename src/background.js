@@ -18,24 +18,7 @@ const quickLog = function(txt){
 var ytdl = require('ytdl-core')
 const streamToBlob = require('stream-to-blob')
 
-//HMS Manipulation
-/*
-function convertHMS(value) {
-    const sec = parseInt(value, 10); // convert value to number if it's string
-    let hours   = Math.floor(sec / 3600); // get hours
-    let minutes = Math.floor((sec - (hours * 3600)) / 60); // get minutes
-    let seconds = sec - (hours * 3600) - (minutes * 60); //  get seconds
-    // add 0 if value < 10; Example: 2 => 02
-    if (hours   < 10) {hours   = "0"+hours;}
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    return hours+':'+minutes+':'+seconds; // Return is HH : MM : SS
-}
-*/
-
 function getReadableStreamFromYoutubeUrl(myUrl,type){
-    //const debutHMS = convertHMS(debut)
-    //console.log("Getting ReadableStream from " + myUrl + " starting from " + debut);
     console.log(`Getting ${type} ReadableStream from ${myUrl}`)
     var stream;
     switch (type){
@@ -43,7 +26,7 @@ function getReadableStreamFromYoutubeUrl(myUrl,type){
         stream = ytdl(myUrl,{quality: 'highestaudio'});
         break;
     case 'video':
-        stream = ytdl(myUrl,{ quality: 'highestvideo'});
+        stream = ytdl(myUrl,{quality: 'highestvideo'});
         break;
     case _ :
         stream = ytdl(myUrl,{filter: 'audioandvideo', quality: 'highestvideo'});
@@ -56,31 +39,6 @@ async function convertStreamToBlob(stream){
 	const blob = await streamToBlob(stream)
 	return blob
 }
-
-//trimVideoEnd(message['filename'],message['format'],message['fin'],message['debut'])
-/*
-async function trimVideoEnd(blob,title,format,end,start){
-    const { createFFmpeg, fetchFile } = FFmpeg;
-    quickLog("Initializing FFmpeg")
-    const ffmpeg = createFFmpeg({
-        log: false,
-        corePath: await chrome.runtime.getURL('vendor/ffmpeg-core.js')
-    });
-    await ffmpeg.load();
-
-    quickLog("Writing into the RAM for treatment")
-    var buffer = await blob.arrayBuffer()
-    let stringFileName = `${title}.${format}`;
-    var stringFileNameTrim = `${title}_trimmed.${format}`;
-    ffmpeg.FS('writeFile', stringFileName, new Uint8Array(buffer) );
-
-    quickLog("Trimming video")
-    await ffmpeg.run('-i', stringFileName, '-to', `${end-start}`, '-c' ,'copy', '-copyts',stringFileNameTrim);
-    
-    resArray = await ffmpeg.FS('readFile',stringFileNameTrim);
-    quickLog("Returning blob")
-    return new Promise((resolve)=>{resolve(new Blob([resArray]))})
-}*/
 
 async function trimVideoEndAndMerge(VideoBlob,AudioBlob,title,format,end,start){
     const { createFFmpeg, fetchFile } = FFmpeg;
@@ -121,24 +79,6 @@ async function trimVideoEndAndMerge(VideoBlob,AudioBlob,title,format,end,start){
     resArray = await ffmpeg.FS('readFile',stringFileNameTrim);
     quickLog("Returning blob")
     return new Promise((resolve)=>{resolve(new Blob([resArray]))})
-}
-
-async function getBitrate(url){
-    return new Promise((resolve) => {
-        let bitrate = 0;
-
-        const info = function(url) {
-            return ytdl.getBasicInfo(url,{filter: 'audioandvideo', quality: 'highestvideo'})
-            .then(token => { return token } )
-        };
-
-        const vidInfo = info(url);
-        vidInfo.then(function(result) {
-            console.log(result.formats);
-            bitrate = result.formats[0].bitrate;
-        });
-        resolve(bitrate)
-    })
 }
 
 //Initialisation du background
