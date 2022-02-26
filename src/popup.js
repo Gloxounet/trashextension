@@ -12,6 +12,14 @@ var quickLog = function(txt){
     }
 }
 
+//Manipulate date
+function prettyDate2(date) {
+	return date.toLocaleTimeString(navigator.language, {
+	  hour: '2-digit',
+	  minute:'2-digit'
+	}).replace(':','h');
+  }
+
 //ContentScript & Reloading
 var reloadPage = function() {
 	chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
@@ -72,6 +80,14 @@ function getSlidersFromStoragePromise(){
 
 function setSlidersOnStorage(slidersDict){
 	chrome.storage.local.set(slidersDict, function(res){})
+};
+
+function getOptionsFromStoragePromise(){
+	return new Promise(function(resolve,reject){
+		chrome.storage.local.get({
+			highresmode: false,
+			datefilename: true
+		  }, (items)=>{resolve(items)})})
 };
 
 //Changing slider state
@@ -178,34 +194,45 @@ var onClickMain = async function(){
 				var fin = response['fin'];
 				var total = response['duree'];
 				quickLog(`Start ${debut} End ${fin} Total ${total}`)
+				
+				//Getting options
+				getOptionsFromStoragePromise().then(function(optionsState){
+					var highresmode = optionsState.highresmode;
+					var datefilename = optionsState.datefilename;
 
-				//Getting sliders states
-				getSlidersFromStoragePromise().then(function(slidersState){
-					slidersState = JSON.stringify(slidersState)
-					console.log('Current sliders states are :' + (slidersState))
-					
-					//Envoi du message final
-					var message  = {
-						'type' : 'download_request',
-						'url' : url,
-						'quality': "highest",
-						'filename': title,
-						'format': "mkv",
-						'debut':debut,
-						'fin':fin,
-						'total':total,
-						'sliders_states':slidersState
-					};
-					chrome.runtime.sendMessage(message);
-					quickLog("Sending download")
-					console.log("Download request sent to background.js : " + JSON.stringify(message))
-					
-					/*Partie téléchargement source (dépendant de popup.html d'où présence du code ici)*/
-					slidersState = JSON.parse(slidersState);
-					if (slidersState['trash-source-checkbox']==="true"){
-						quickLog("Downloading trash source png")
-						trashSource(url);
+					if (datefilename){
+						let date = new Date()
+						title = prettyDate2(date) + " - " + title;
 					}
+
+					//Getting sliders states and options
+					getSlidersFromStoragePromise().then(function(slidersState){
+						slidersState = JSON.stringify(slidersState)
+						console.log('Current sliders states are :' + (slidersState))
+						
+						//Envoi du message final
+						var message  = {
+							'type' : 'download_request',
+							'url' : url,
+							'highquality': highresmode,
+							'filename': title,
+							'format': "mkv",
+							'debut':debut,
+							'fin':fin,
+							'total':total,
+							'sliders_states':slidersState
+						};
+						chrome.runtime.sendMessage(message);
+						quickLog("Sending download")
+						console.log("Download request sent to background.js : " + JSON.stringify(message))
+						
+						/*Partie téléchargement source (dépendant de popup.html d'où présence du code ici)*/
+						slidersState = JSON.parse(slidersState);
+						if (slidersState['trash-source-checkbox']==="true"){
+							quickLog("Downloading trash source png")
+							trashSource(url);
+						}
+					});
 				});
 			}
 		});
@@ -223,6 +250,15 @@ window.addEventListener("load",async function(event) {
 			quickLog("A download is still running")
 		}
 	})
+
+	//Link to Option
+	document.getElementById('go-to-options').addEventListener('click', function() {
+		if (chrome.runtime.openOptionsPage) {
+		  chrome.runtime.openOptionsPage();
+		} else {
+		  window.open(chrome.runtime.getURL('options.html'));
+		}
+	  });
 
 	//Récupération du bouton HTML
 	var dButton = document.getElementById('download');

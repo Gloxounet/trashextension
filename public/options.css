@@ -1,0 +1,60 @@
+/*popup.css*/
+
+/*Div to set all elements*/
+body {
+  position: relative;
+  width: 400px;
+
+  font-size: 100%;
+
+  background: #292A2D;
+}
+
+.labelcheckbox{
+  font-family: Roboto;
+  font-weight: normal;
+  align-items: center;
+
+  color: #FFFFFF;
+}
+
+#save{
+  width: 80px;
+  height: 25px;
+  
+  background: #292A2D;
+  border-radius: 4px;
+  
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 14px;
+  margin-top: 20px;
+  
+  color: #FFFFFF;
+}
+
+#status {
+  width: 60px;
+  height: 12px;
+  margin-top: 5px;
+
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 200;
+  font-size: 9px;
+  line-height: 11px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+
+  color: #FCFF69;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

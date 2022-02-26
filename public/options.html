@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TrashExtension Options</title>
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link href="options.css" rel="stylesheet">
+</head>
+<body>
+
+    <!--4K Mode -->
+    <div class="divcheckbox">
+        <input type="checkbox" id="4Kmode">
+        <label for="4Kmode" class="labelcheckbox">Enable 4K format and higher</label>
+    </div>
+
+    <!-- Adding date-->
+    <div class="divcheckbox">
+        <input type="checkbox" id="datefilename">
+        <label for="datefilename" class="labelcheckbox">Writes the date in the name of downloaded files</label>
+    </div>
+
+    <div class="container">
+        <button id="save">SAVE</button>
+    </div>
+
+    <div class="container">
+        <div id="status"></div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>

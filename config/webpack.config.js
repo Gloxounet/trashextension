@@ -11,7 +11,8 @@ const config = (env, argv) => merge(common, {
     popup: PATHS.src + '/popup.js',
     contentScript: PATHS.src + '/contentScript.js',
     background: PATHS.src + '/background.js',
-    progressAndLog: PATHS.src + '/progressAndLog.js'
+    progressAndLog: PATHS.src + '/progressAndLog.js',
+    options: PATHS.src + '/options.js',
   },
   devtool: 'cheap-module-source-map'
 });
